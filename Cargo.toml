@@ -1,0 +1,10 @@
+[package]
+name = "stsbr"
+version = "0.1.0"
+authors = ["agares <me@agares.info>"]
+edition = "2018"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = "0.4"
