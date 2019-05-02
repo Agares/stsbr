@@ -26,7 +26,7 @@ pub fn get_header_json(allow_click_events: bool) -> String {
     return serde_json::to_string(&header).unwrap();
 }
 
-fn convert_sources_to_blocks(sources: &Vec<Box<DataSource>>) -> Vec<Block> {
+fn convert_sources_to_blocks(sources: &Vec<&DataSource>) -> Vec<Block> {
     sources
         .iter()
         .map(|block| {
@@ -42,7 +42,7 @@ fn convert_sources_to_blocks(sources: &Vec<Box<DataSource>>) -> Vec<Block> {
         .collect::<Vec<Block>>()
 }
 
-pub fn sources_to_json(sources: &Vec<Box<DataSource>>) -> String {
+pub fn sources_to_json(sources: &Vec<&DataSource>) -> String {
     let blocks = convert_sources_to_blocks(sources);
 
     serde_json::to_string(&blocks).unwrap()
