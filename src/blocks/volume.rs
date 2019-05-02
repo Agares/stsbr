@@ -1,6 +1,6 @@
 use std::string::ToString;
 use std::sync::Mutex;
-use crate::data_source::{DataSource, DataSourceState};
+use crate::data_source::{DataSource, DataSourceState, BlockError};
 use libpulse_binding::callbacks::ListResult;
 use libpulse_binding::context::introspect::SinkInfo;
 use libpulse_binding::callbacks::ListResult::Item;
@@ -14,13 +14,21 @@ pub struct Volume {
 }
 
 impl DataSource for Volume {
-    fn current_state(&self) -> DataSourceState {
-        let info = self.sink_info.lock().unwrap().clone();
+    fn current_state(&self) -> Result<DataSourceState, BlockError> {
+        let info;
+        {
+            let lock_result = self.sink_info.lock();
+
+            match lock_result {
+                Ok(i) => info = (*i).clone(),
+                Err(_) => return Err(BlockError::new("Failed to lock on mutex".to_string()))
+            }
+        }
 
         if let Some(x) = info {
-            DataSourceState::new(x)
+            Ok(DataSourceState::new(x))
         } else {
-            DataSourceState::new("???".to_string())
+            Err(BlockError::new("Failed to get current volume".to_string()))
         }
     }
 }

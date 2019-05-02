@@ -1,5 +1,30 @@
+use std::error::Error;
+use std::fmt::{Display, Formatter};
+use std::{fmt};
+
+#[derive(Debug)]
+pub struct BlockError(String);
+
+impl Error for BlockError {}
+
+impl Display for BlockError {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        f.write_str(&self.0)
+    }
+}
+
+impl BlockError {
+    pub fn new(msg:String) -> Self {
+        BlockError(msg)
+    }
+
+    pub fn message(&self) -> String {
+        self.0.to_string()
+    }
+}
+
 pub trait DataSource {
-    fn current_state(&self) -> DataSourceState;
+    fn current_state(&self) -> Result<DataSourceState, BlockError>;
 }
 
 pub struct DataSourceState {

@@ -1,20 +1,36 @@
-use crate::data_source::{DataSourceState, DataSource};
+use crate::data_source::{DataSourceState, DataSource, BlockError};
 
 pub struct MediaPlayer {}
 
 impl DataSource for MediaPlayer {
-    fn current_state(&self) -> DataSourceState {
-        let bus = mpris::PlayerFinder::new().unwrap();
-        let all_players = bus.find_all().unwrap();
-        let player = all_players.first().unwrap();
-        let metadata = player.get_metadata().unwrap();
-        let formatted = format!(
-            "{} - {}",
-            metadata.artists().unwrap().first().unwrap(),
-            metadata.title().unwrap()
-        );
+    fn current_state(&self) -> Result<DataSourceState, BlockError> {
+        let player = mpris::PlayerFinder::new()
+            .or_else(|_| Err(BlockError::new("Failed to create player finder".into())))
+            .and_then(|finder| finder.find_all().map_err(|_| BlockError::new("Failed to find all players".into())))
+            .and_then(|players| {
+                let player = players.first().ok_or(BlockError::new("No players are running".into()))?;
+                let metadata = player.get_metadata().or_else(|_| Err(BlockError::new("".into())))?;
 
-        DataSourceState::new(formatted)
+                let artist = metadata
+                    .artists()
+                    .ok_or(BlockError::new("Failed to get artists".into()))
+                    .and_then(|artists| artists.first().ok_or(BlockError::new("Found zero artists".into())))
+                    .or_else(|_| Err(BlockError::new("".into())))?;
+
+                let title = metadata
+                    .title()
+                    .ok_or(BlockError::new("Failed to get title".into()))?;
+
+                let formatted = format!(
+                    "{} - {}",
+                    artist,
+                    title
+                );
+
+                Ok(DataSourceState::new(formatted))
+            });
+
+        return player;
     }
 }
 

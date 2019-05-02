@@ -33,7 +33,10 @@ fn convert_sources_to_blocks(sources: &Vec<&DataSource>) -> Vec<Block> {
             let state = block.current_state();
 
             return Block {
-                full_text: state.text().to_string(),
+                full_text: match state {
+                    Ok(s) => s.text().to_string(),
+                    Err(s) => s.message()
+                },
                 markup: "pango".to_string(),
                 instance: "fixme".to_string(),
                 name: "blahblahblahfixme".to_owned(),

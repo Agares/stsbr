@@ -1,12 +1,13 @@
-use crate::data_source::{DataSource, DataSourceState};
+use crate::data_source::{DataSource, DataSourceState, BlockError};
 use chrono::Local;
 
 pub struct DateTime {}
 
 impl DataSource for DateTime {
-    fn current_state(&self) -> DataSourceState {
+    fn current_state(&self) -> Result<DataSourceState, BlockError> {
         let now: chrono::DateTime<Local> = Local::now();
-        DataSourceState::new(now.format("%Y-%m-%d %T").to_string())
+
+        Ok(DataSourceState::new(now.format("%Y-%m-%d %T").to_string()))
     }
 }
 

@@ -1,21 +1,20 @@
-use crate::data_source::{DataSource, DataSourceState};
+use crate::data_source::{DataSource, DataSourceState, BlockError};
 use std::os::raw::c_double;
 
 pub struct SystemLoad {}
 
 impl DataSource for SystemLoad {
-    fn current_state(&self) -> DataSourceState {
+    fn current_state(&self) -> Result<DataSourceState, BlockError> {
         let mut load_averages: [c_double; 1] = [0f64];
         let received = unsafe { libc::getloadavg(load_averages.as_mut_ptr(), 1) };
 
         if received != 1 {
-            // todo return Err()
-            panic!("Cannot get load average!");
+            return Err(BlockError::new("Cannot get load average!".to_string()));
         }
 
         let load = load_averages[0];
 
-        DataSourceState::new(format!("{}", load))
+        Ok(DataSourceState::new(format!("{}", load)))
     }
 }
 
