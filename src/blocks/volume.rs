@@ -1,16 +1,14 @@
 use std::string::ToString;
-use std::sync::{Mutex, Arc};
+use std::sync::Mutex;
 use crate::data_source::{DataSource, DataSourceState, BlockError};
-use libpulse_binding::callbacks::ListResult;
-use libpulse_binding::context::introspect::SinkInfo;
 use libpulse_binding::callbacks::ListResult::Item;
 use libpulse_binding::mainloop::threaded::Mainloop;
 use libpulse_binding::context::Context;
-use crate::main;
 use std::collections::HashMap;
 
 pub struct VolumeFactory {
     context:Context,
+    #[allow(unused)]
     main_loop:Mainloop
 }
 
@@ -25,21 +23,20 @@ lazy_static! {
 
 impl<'a> DataSource for Volume<'a> {
     fn current_state(&self) -> Result<DataSourceState, BlockError> {
-        self.context.introspect().get_sink_info_by_name("@DEFAULT_SINK@", |info| {
+        let sink_name = self.sink_name.clone();
+        self.context.introspect().get_sink_info_by_name(&self.sink_name, move |info| {
             match info {
                 Item(sink_info) => {
-                    let mut reference = SINK_VOLUME
-                        .lock()
-                        .unwrap();
+                    let mut volume_map = SINK_VOLUME.lock().unwrap();
 
-                    reference.insert("@DEFAULT_SINK@".into(), (*sink_info).volume.print());
+                    volume_map.insert(sink_name.clone(), (*sink_info).volume.print());
                 }
                 _ => {}
             }
         });
 
         let guard = SINK_VOLUME.lock().unwrap();
-        let sink_volume = guard.get("@DEFAULT_SINK@".into());
+        let sink_volume = guard.get(&self.sink_name);
 
         match sink_volume {
             Some(i) => Ok(DataSourceState::new(i.clone())),

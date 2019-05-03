@@ -1,23 +1,28 @@
 use crate::data_source::DataSource;
 use crate::i3bar::{get_header_json, sources_to_json};
 use std::time::Duration;
-use libpulse_binding::mainloop::threaded::Mainloop;
-use libpulse_binding::context::Context;
 use crate::blocks::date_time::DateTime;
 use crate::blocks::system_load::SystemLoad;
 use crate::blocks::network_interface::NetworkInterface;
 use crate::blocks::free_disk_space::FreeDiskSpace;
 use crate::blocks::media_player::MediaPlayer;
-use crate::blocks::volume::{Volume, VolumeFactory};
+use crate::blocks::volume::VolumeFactory;
+use simplelog::{WriteLogger, Config};
+use log::LevelFilter;
+use std::fs::File;
 
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate log;
 
 mod data_source;
 mod i3bar;
 mod blocks;
 
 fn main() {
+    WriteLogger::init(LevelFilter::Debug, Config::default(), File::create("stsbr.log").unwrap()).unwrap();
+
     let date_time = DateTime::new();
     let system_load = SystemLoad::new();
     let network_interface = NetworkInterface::new();

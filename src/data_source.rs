@@ -17,10 +17,6 @@ impl BlockError {
     pub fn new(msg:String) -> Self {
         BlockError(msg)
     }
-
-    pub fn message(&self) -> String {
-        self.0.to_string()
-    }
 }
 
 pub trait DataSource {
