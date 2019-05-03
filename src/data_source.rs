@@ -1,6 +1,6 @@
 use std::error::Error;
+use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::{fmt};
 
 #[derive(Debug)]
 pub struct BlockError(String);
@@ -14,7 +14,7 @@ impl Display for BlockError {
 }
 
 impl BlockError {
-    pub fn new(msg:String) -> Self {
+    pub fn new(msg: String) -> Self {
         BlockError(msg)
     }
 }

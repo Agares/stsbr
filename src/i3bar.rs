@@ -29,21 +29,17 @@ pub fn get_header_json(allow_click_events: bool) -> String {
 fn convert_sources_to_blocks(sources: &Vec<&DataSource>) -> Vec<Block> {
     sources
         .iter()
-        .map(|block| {
-            block.current_state()
-        })
-        .filter_map(|state| {
-            match state {
-                Ok(st) => Some(Block {
-                    full_text: st.text().to_owned(),
-                    markup: "pango".to_string(),
-                    instance: "fixme".to_string(),
-                    name: "blahblahblahfixme".to_owned(),
-                }),
-                Err(e) => {
-                    warn!("{}", e);
-                    None
-                }
+        .map(|block| block.current_state())
+        .filter_map(|state| match state {
+            Ok(st) => Some(Block {
+                full_text: st.text().to_owned(),
+                markup: "pango".to_string(),
+                instance: "fixme".to_string(),
+                name: "blahblahblahfixme".to_owned(),
+            }),
+            Err(e) => {
+                warn!("{}", e);
+                None
             }
         })
         .collect::<Vec<Block>>()
