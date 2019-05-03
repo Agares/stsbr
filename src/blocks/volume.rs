@@ -30,7 +30,7 @@ impl<'a> DataSource for Volume<'a> {
                 Item(sink_info) => {
                     let mut volume_map = SINK_VOLUME.lock().unwrap();
 
-                    volume_map.insert(sink_name.clone(), (*sink_info).volume.print());
+                    volume_map.insert(sink_name.clone(), (*sink_info).volume.avg().print());
                 }
                 _ => {}
             });
