@@ -8,7 +8,7 @@ use crate::blocks::system_load::SystemLoad;
 use crate::blocks::network_interface::NetworkInterface;
 use crate::blocks::free_disk_space::FreeDiskSpace;
 use crate::blocks::media_player::MediaPlayer;
-use crate::blocks::volume::V;
+use crate::blocks::volume::{Volume, VolumeFactory};
 
 #[macro_use]
 extern crate lazy_static;
@@ -23,38 +23,21 @@ fn main() {
     let network_interface = NetworkInterface::new();
     let free_disk_space = FreeDiskSpace::new();
     let media_player = MediaPlayer::new();
+    let volume_factory = VolumeFactory::new();
+    let volume = volume_factory.new_volume("@DEFAULT_SINK@".into());
 
     let sources: Vec<&DataSource> = vec![
-        &(*V),
+        &volume,
         &media_player,
         &free_disk_space,
         &network_interface,
         &system_load,
         &date_time,
     ];
-
-    let mut mainloop = Mainloop::new().unwrap();
-    mainloop.start().unwrap();
-
-    let mut ctx = Context::new(&mainloop, "stsbr").unwrap();
-    ctx.connect(None, libpulse_binding::context::flags::NOFLAGS, None).unwrap();
-
-    loop {
-        match ctx.get_state() {
-            libpulse_binding::context::State::Ready => {break;},
-            libpulse_binding::context::State::Failed
-            | libpulse_binding::context::State::Terminated => {
-                panic!("Failed to connect to pulse");
-            },
-            _ => {}
-        }
-    }
-
     println!("{}", get_header_json(false));
     println!("[");
 
     loop {
-        ctx.introspect().get_sink_info_by_name("@DEFAULT_SINK@", |info| V.callback_sink_info(info));
         println!("{},", sources_to_json(&sources));
 
         std::thread::sleep(Duration::from_millis(200));
