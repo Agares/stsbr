@@ -1,9 +1,9 @@
-use crate::data_source::{BlockError, DataSource, DataSourceState};
+use crate::data_source::{BlockError, Block, DataSourceState};
 use nix::sys::socket::{AddressFamily, SockAddr};
 
 pub struct NetworkInterface {}
 
-impl DataSource for NetworkInterface {
+impl Block for NetworkInterface {
     fn current_state(&self) -> Result<DataSourceState, BlockError> {
         let mut addrs = nix::ifaddrs::getifaddrs()
             .map_err(|_| BlockError::new("Failed to get interface addresses".to_string()))?;

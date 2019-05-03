@@ -1,4 +1,4 @@
-use crate::data_source::{BlockError, DataSource, DataSourceState};
+use crate::data_source::{BlockError, Block, DataSourceState};
 use libpulse_binding::callbacks::ListResult::Item;
 use libpulse_binding::context::Context;
 use libpulse_binding::mainloop::threaded::Mainloop;
@@ -21,7 +21,7 @@ lazy_static! {
     static ref SINK_VOLUME: Mutex<HashMap<String, String>> = Mutex::new(HashMap::new());
 }
 
-impl<'a> DataSource for Volume<'a> {
+impl<'a> Block for Volume<'a> {
     fn current_state(&self) -> Result<DataSourceState, BlockError> {
         let sink_name = self.sink_name.clone();
         self.context

@@ -19,7 +19,7 @@ impl BlockError {
     }
 }
 
-pub trait DataSource {
+pub trait Block {
     fn current_state(&self) -> Result<DataSourceState, BlockError>;
 }
 

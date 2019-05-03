@@ -1,4 +1,4 @@
-use crate::data_source::DataSource;
+use crate::data_source::Block;
 use serde::Serialize;
 use std::borrow::ToOwned;
 use std::string::ToString;
@@ -10,7 +10,7 @@ struct Header {
 }
 
 #[derive(Serialize)]
-struct Block {
+struct BarBlock {
     full_text: String,
     markup: String,
     name: String,
@@ -26,12 +26,12 @@ pub fn get_header_json(allow_click_events: bool) -> String {
     return serde_json::to_string(&header).unwrap();
 }
 
-fn convert_sources_to_blocks(sources: &Vec<&DataSource>) -> Vec<Block> {
+fn convert_blocks_to_bar_blocks(sources: &Vec<&Block>) -> Vec<BarBlock> {
     sources
         .iter()
         .map(|block| block.current_state())
         .filter_map(|state| match state {
-            Ok(st) => Some(Block {
+            Ok(st) => Some(BarBlock {
                 full_text: st.text().to_owned(),
                 markup: "pango".to_string(),
                 instance: "fixme".to_string(),
@@ -42,11 +42,11 @@ fn convert_sources_to_blocks(sources: &Vec<&DataSource>) -> Vec<Block> {
                 None
             }
         })
-        .collect::<Vec<Block>>()
+        .collect::<Vec<BarBlock>>()
 }
 
-pub fn sources_to_json(sources: &Vec<&DataSource>) -> String {
-    let blocks = convert_sources_to_blocks(sources);
+pub fn sources_to_json(sources: &Vec<&Block>) -> String {
+    let blocks = convert_blocks_to_bar_blocks(sources);
 
     serde_json::to_string(&blocks).unwrap()
 }

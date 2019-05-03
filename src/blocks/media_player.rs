@@ -1,8 +1,8 @@
-use crate::data_source::{BlockError, DataSource, DataSourceState};
+use crate::data_source::{BlockError, Block, DataSourceState};
 
 pub struct MediaPlayer {}
 
-impl DataSource for MediaPlayer {
+impl Block for MediaPlayer {
     fn current_state(&self) -> Result<DataSourceState, BlockError> {
         let player = mpris::PlayerFinder::new()
             .or_else(|_| Err(BlockError::new("Failed to create player finder".into())))

@@ -4,7 +4,7 @@ use crate::blocks::media_player::MediaPlayer;
 use crate::blocks::network_interface::NetworkInterface;
 use crate::blocks::system_load::SystemLoad;
 use crate::blocks::volume::VolumeFactory;
-use crate::data_source::DataSource;
+use crate::data_source::Block;
 use crate::i3bar::{get_header_json, sources_to_json};
 use log::LevelFilter;
 use simplelog::{Config, WriteLogger};
@@ -36,7 +36,7 @@ fn main() {
     let volume_factory = VolumeFactory::new();
     let volume = volume_factory.new_volume("@DEFAULT_SINK@".into());
 
-    let sources: Vec<&DataSource> = vec![
+    let sources: Vec<&Block> = vec![
         &volume,
         &media_player,
         &free_disk_space,

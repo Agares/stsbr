@@ -1,9 +1,9 @@
-use crate::data_source::{BlockError, DataSource, DataSourceState};
+use crate::data_source::{BlockError, Block, DataSourceState};
 use chrono::Local;
 
 pub struct DateTime {}
 
-impl DataSource for DateTime {
+impl Block for DateTime {
     fn current_state(&self) -> Result<DataSourceState, BlockError> {
         let now: chrono::DateTime<Local> = Local::now();
 
