@@ -1,9 +1,9 @@
-use crate::block::{BlockError, Block, DataSourceState};
+use crate::block::{BlockError, Block, BlockState};
 
 pub struct MediaPlayer {}
 
 impl Block for MediaPlayer {
-    fn current_state(&self) -> Result<DataSourceState, BlockError> {
+    fn current_state(&self) -> Result<BlockState, BlockError> {
         let player = mpris::PlayerFinder::new()
             .or_else(|_| Err(BlockError::new("Failed to create player finder".into())))
             .and_then(|finder| {
@@ -35,7 +35,7 @@ impl Block for MediaPlayer {
 
                 let formatted = format!("{} - {}", artist, title);
 
-                Ok(DataSourceState::new(formatted))
+                Ok(BlockState::new(formatted))
             });
 
         return player;

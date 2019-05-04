@@ -20,16 +20,16 @@ impl BlockError {
 }
 
 pub trait Block {
-    fn current_state(&self) -> Result<DataSourceState, BlockError>;
+    fn current_state(&self) -> Result<BlockState, BlockError>;
 }
 
-pub struct DataSourceState {
+pub struct BlockState {
     text: String,
 }
 
-impl DataSourceState {
-    pub fn new(text: String) -> DataSourceState {
-        DataSourceState { text }
+impl BlockState {
+    pub fn new(text: String) -> BlockState {
+        BlockState { text }
     }
 
     pub fn text(&self) -> &String {

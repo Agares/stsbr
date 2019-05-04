@@ -1,4 +1,4 @@
-use crate::block::{BlockError, Block, DataSourceState};
+use crate::block::{BlockError, Block, BlockState};
 use libpulse_binding::callbacks::ListResult::Item;
 use libpulse_binding::context::Context;
 use libpulse_binding::mainloop::threaded::Mainloop;
@@ -22,7 +22,7 @@ lazy_static! {
 }
 
 impl<'a> Block for Volume<'a> {
-    fn current_state(&self) -> Result<DataSourceState, BlockError> {
+    fn current_state(&self) -> Result<BlockState, BlockError> {
         let sink_name = self.sink_name.clone();
         self.context
             .introspect()
@@ -39,7 +39,7 @@ impl<'a> Block for Volume<'a> {
         let sink_volume = guard.get(&self.sink_name);
 
         match sink_volume {
-            Some(i) => Ok(DataSourceState::new(i.clone())),
+            Some(i) => Ok(BlockState::new(i.clone())),
             None => Err(BlockError::new("Unknown volume".to_string())),
         }
     }
