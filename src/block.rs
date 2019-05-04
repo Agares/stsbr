@@ -38,7 +38,7 @@ impl BlockState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum MouseButton {
     Left,
     Middle,
@@ -77,5 +77,8 @@ impl ClickEvent {
 
     pub fn instance(&self) -> usize {
         self.instance
+    }
+    pub fn button(&self) -> MouseButton {
+        self.button
     }
 }
