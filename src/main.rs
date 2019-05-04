@@ -10,6 +10,7 @@ use log::LevelFilter;
 use simplelog::{Config, WriteLogger};
 use std::fs::File;
 use std::time::Duration;
+use std::sync::mpsc::{Sender, Receiver, TryRecvError};
 
 #[macro_use]
 extern crate lazy_static;
@@ -28,6 +29,26 @@ fn main() {
     )
     .unwrap();
 
+    let (sender, receiver): (Sender<String>, Receiver<String>) = std::sync::mpsc::channel();
+
+    std::thread::spawn(move || {
+        let stdin = std::io::stdin();
+
+        loop {
+            let mut line = String::new();
+
+            match stdin.read_line(&mut line) {
+                Ok(_) => {
+                    sender.send(line).unwrap()
+                },
+                Err(e) => {
+                    error!("{}", e);
+                    break;
+                }
+            };
+        }
+    });
+
     let date_time = DateTime::new();
     let system_load = SystemLoad::new();
     let network_interface = NetworkInterface::new();
@@ -44,11 +65,21 @@ fn main() {
         &system_load,
         &date_time,
     ];
-    println!("{}", get_header_json(false));
+    println!("{}", get_header_json(true));
     println!("[");
 
     loop {
         println!("{},", sources_to_json(&sources));
+
+        match receiver.try_recv() {
+            Ok(x) => {
+                if x != "[\n" {
+                    info!("{}", x.trim_matches(','));
+                }
+            },
+            Err(TryRecvError::Empty) => {},
+            Err(x) => error!("{}", x)
+        }
 
         std::thread::sleep(Duration::from_millis(200));
     }
