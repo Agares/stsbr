@@ -1,4 +1,4 @@
-use crate::block::{Block, BlockError, BlockState};
+use crate::block::{Block, BlockError, BlockState, ClickEvent};
 use std::os::raw::c_double;
 
 pub struct SystemLoad {}
@@ -16,6 +16,8 @@ impl Block for SystemLoad {
 
         Ok(BlockState::new(format!("{}", load)))
     }
+
+    fn handle_click(&self, event: ClickEvent) {}
 }
 
 impl SystemLoad {

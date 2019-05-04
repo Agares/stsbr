@@ -21,6 +21,7 @@ impl BlockError {
 
 pub trait Block {
     fn current_state(&self) -> Result<BlockState, BlockError>;
+    fn handle_click(&self, event: ClickEvent);
 }
 
 pub struct BlockState {
@@ -34,5 +35,47 @@ impl BlockState {
 
     pub fn text(&self) -> &String {
         return &self.text;
+    }
+}
+
+#[derive(Debug)]
+pub enum MouseButton {
+    Left,
+    Middle,
+    Right,
+    ScrollUp,
+    ScrollDown,
+}
+
+#[derive(Debug)]
+pub struct Position(pub u32, pub u32);
+#[derive(Debug)]
+pub struct Dimensions(pub u32, pub u32);
+
+#[derive(Debug)]
+pub struct ClickEvent {
+    button: MouseButton,
+    position: Position,
+    block_dimensions: Dimensions,
+    instance: usize,
+}
+
+impl ClickEvent {
+    pub fn new(
+        button: MouseButton,
+        position: Position,
+        block_dimensions: Dimensions,
+        instance: usize,
+    ) -> Self {
+        ClickEvent {
+            button,
+            position,
+            block_dimensions,
+            instance,
+        }
+    }
+
+    pub fn instance(&self) -> usize {
+        self.instance
     }
 }

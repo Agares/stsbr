@@ -1,4 +1,4 @@
-use crate::block::{Block, BlockError, BlockState};
+use crate::block::{Block, BlockError, BlockState, ClickEvent};
 
 pub struct FreeDiskSpace {}
 
@@ -12,6 +12,8 @@ impl Block for FreeDiskSpace {
 
         Ok(BlockState::new(format!("{:.2} GB", gigabytes_free)))
     }
+
+    fn handle_click(&self, event: ClickEvent) {}
 }
 
 impl FreeDiskSpace {

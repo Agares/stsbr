@@ -1,4 +1,4 @@
-use crate::block::{Block, BlockError, BlockState};
+use crate::block::{Block, BlockError, BlockState, ClickEvent};
 use chrono::Local;
 
 pub struct DateTime {}
@@ -9,6 +9,8 @@ impl Block for DateTime {
 
         Ok(BlockState::new(now.format("%Y-%m-%d %T").to_string()))
     }
+
+    fn handle_click(&self, event: ClickEvent) {}
 }
 
 impl DateTime {

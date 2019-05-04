@@ -1,5 +1,5 @@
-use crate::block::Block;
-use serde::Serialize;
+use crate::block::{Block, ClickEvent, Dimensions, MouseButton, Position};
+use serde::{Deserialize, Serialize};
 use std::borrow::ToOwned;
 use std::string::ToString;
 
@@ -13,8 +13,19 @@ struct Header {
 struct BarBlock {
     full_text: String,
     markup: String,
-    name: String,
     instance: String,
+}
+
+#[derive(Deserialize)]
+struct Event {
+    instance: String,
+    button: u32,
+    x: u32,
+    y: u32,
+    relative_x: u32,
+    relative_y: u32,
+    width: u32,
+    height: u32,
 }
 
 pub fn get_header_json(allow_click_events: bool) -> String {
@@ -27,26 +38,57 @@ pub fn get_header_json(allow_click_events: bool) -> String {
 }
 
 fn convert_blocks_to_bar_blocks(sources: &Vec<&Block>) -> Vec<BarBlock> {
-    sources
-        .iter()
-        .map(|block| block.current_state())
-        .filter_map(|state| match state {
-            Ok(st) => Some(BarBlock {
+    let mut bar_blocks = vec![];
+
+    for i in 0..sources.len() {
+        let source = sources[i];
+        let state = source.current_state();
+
+        match state {
+            Ok(st) => bar_blocks.push(BarBlock {
                 full_text: st.text().to_owned(),
                 markup: "pango".to_string(),
-                instance: "fixme".to_string(),
-                name: "blahblahblahfixme".to_owned(),
+                instance: format!("{}", i),
             }),
             Err(e) => {
                 warn!("{}", e);
-                None
             }
-        })
-        .collect::<Vec<BarBlock>>()
+        }
+    }
+
+    bar_blocks
 }
 
 pub fn sources_to_json(sources: &Vec<&Block>) -> String {
     let blocks = convert_blocks_to_bar_blocks(sources);
 
     serde_json::to_string(&blocks).unwrap()
+}
+
+pub fn read_event(raw: &str) -> ClickEvent {
+    let raw_event = serde_json::from_str::<Event>(&raw).unwrap();
+
+    let button = match raw_event.button {
+        1 => MouseButton::Left,
+        2 => MouseButton::Middle,
+        3 => MouseButton::Right,
+        4 => MouseButton::ScrollUp,
+        5 => MouseButton::ScrollDown,
+        _ => {
+            warn!("Unknown mouse button {}", raw_event.button);
+            MouseButton::Left
+        }
+    };
+
+    let instance = match raw_event.instance.parse() {
+        Ok(value) => value,
+        Err(e) => panic!("Invalid instance ID: {}", e),
+    };
+
+    ClickEvent::new(
+        button,
+        Position(raw_event.relative_x, raw_event.relative_y),
+        Dimensions(raw_event.width, raw_event.height),
+        instance,
+    )
 }

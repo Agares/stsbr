@@ -1,4 +1,4 @@
-use crate::block::{Block, BlockError, BlockState};
+use crate::block::{Block, BlockError, BlockState, ClickEvent};
 
 pub struct MediaPlayer {}
 
@@ -40,6 +40,8 @@ impl Block for MediaPlayer {
 
         return player;
     }
+
+    fn handle_click(&self, event: ClickEvent) {}
 }
 
 impl MediaPlayer {

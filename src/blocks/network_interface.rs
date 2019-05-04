@@ -1,4 +1,4 @@
-use crate::block::{Block, BlockError, BlockState};
+use crate::block::{Block, BlockError, BlockState, ClickEvent};
 use nix::sys::socket::{AddressFamily, SockAddr};
 
 pub struct NetworkInterface {}
@@ -22,6 +22,8 @@ impl Block for NetworkInterface {
             None => Err(BlockError::new("Failed to find interface".to_string())),
         }
     }
+
+    fn handle_click(&self, event: ClickEvent) {}
 }
 
 impl NetworkInterface {

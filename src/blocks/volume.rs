@@ -1,4 +1,4 @@
-use crate::block::{Block, BlockError, BlockState};
+use crate::block::{Block, BlockError, BlockState, ClickEvent};
 use libpulse_binding::callbacks::ListResult::Item;
 use libpulse_binding::context::Context;
 use libpulse_binding::mainloop::threaded::Mainloop;
@@ -43,6 +43,8 @@ impl<'a> Block for Volume<'a> {
             None => Err(BlockError::new("Unknown volume".to_string())),
         }
     }
+
+    fn handle_click(&self, event: ClickEvent) {}
 }
 
 impl VolumeFactory {

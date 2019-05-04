@@ -5,7 +5,7 @@ use crate::blocks::media_player::MediaPlayer;
 use crate::blocks::network_interface::NetworkInterface;
 use crate::blocks::system_load::SystemLoad;
 use crate::blocks::volume::VolumeFactory;
-use crate::i3bar::{get_header_json, sources_to_json};
+use crate::i3bar::{get_header_json, read_event, sources_to_json};
 use log::LevelFilter;
 use simplelog::{Config, WriteLogger};
 use std::fs::File;
@@ -72,7 +72,10 @@ fn main() {
         match receiver.try_recv() {
             Ok(x) => {
                 if x != "[\n" {
-                    info!("{}", x.trim_matches(','));
+                    let event = read_event(x.trim_matches(','));
+                    let block = sources.get(event.instance()).unwrap();
+
+                    block.handle_click(event);
                 }
             }
             Err(TryRecvError::Empty) => {}
