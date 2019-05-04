@@ -1,4 +1,4 @@
-use crate::block::{BlockError, Block, BlockState};
+use crate::block::{Block, BlockError, BlockState};
 use nix::sys::socket::{AddressFamily, SockAddr};
 
 pub struct NetworkInterface {}

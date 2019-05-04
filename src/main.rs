@@ -1,24 +1,24 @@
+use crate::block::Block;
 use crate::blocks::date_time::DateTime;
 use crate::blocks::free_disk_space::FreeDiskSpace;
 use crate::blocks::media_player::MediaPlayer;
 use crate::blocks::network_interface::NetworkInterface;
 use crate::blocks::system_load::SystemLoad;
 use crate::blocks::volume::VolumeFactory;
-use crate::block::Block;
 use crate::i3bar::{get_header_json, sources_to_json};
 use log::LevelFilter;
 use simplelog::{Config, WriteLogger};
 use std::fs::File;
+use std::sync::mpsc::{Receiver, Sender, TryRecvError};
 use std::time::Duration;
-use std::sync::mpsc::{Sender, Receiver, TryRecvError};
 
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
-mod blocks;
 mod block;
+mod blocks;
 mod i3bar;
 
 fn main() {
@@ -38,9 +38,7 @@ fn main() {
             let mut line = String::new();
 
             match stdin.read_line(&mut line) {
-                Ok(_) => {
-                    sender.send(line).unwrap()
-                },
+                Ok(_) => sender.send(line).unwrap(),
                 Err(e) => {
                     error!("{}", e);
                     break;
@@ -76,9 +74,9 @@ fn main() {
                 if x != "[\n" {
                     info!("{}", x.trim_matches(','));
                 }
-            },
-            Err(TryRecvError::Empty) => {},
-            Err(x) => error!("{}", x)
+            }
+            Err(TryRecvError::Empty) => {}
+            Err(x) => error!("{}", x),
         }
 
         std::thread::sleep(Duration::from_millis(200));

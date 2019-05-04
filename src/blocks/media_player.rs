@@ -1,4 +1,4 @@
-use crate::block::{BlockError, Block, BlockState};
+use crate::block::{Block, BlockError, BlockState};
 
 pub struct MediaPlayer {}
 
