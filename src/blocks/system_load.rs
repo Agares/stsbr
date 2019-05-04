@@ -1,4 +1,4 @@
-use crate::data_source::{BlockError, Block, DataSourceState};
+use crate::block::{BlockError, Block, DataSourceState};
 use std::os::raw::c_double;
 
 pub struct SystemLoad {}

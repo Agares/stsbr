@@ -1,4 +1,4 @@
-use crate::data_source::{BlockError, Block, DataSourceState};
+use crate::block::{BlockError, Block, DataSourceState};
 use libpulse_binding::callbacks::ListResult::Item;
 use libpulse_binding::context::Context;
 use libpulse_binding::mainloop::threaded::Mainloop;

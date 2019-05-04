@@ -1,4 +1,4 @@
-use crate::data_source::Block;
+use crate::block::Block;
 use serde::Serialize;
 use std::borrow::ToOwned;
 use std::string::ToString;

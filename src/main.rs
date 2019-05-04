@@ -4,7 +4,7 @@ use crate::blocks::media_player::MediaPlayer;
 use crate::blocks::network_interface::NetworkInterface;
 use crate::blocks::system_load::SystemLoad;
 use crate::blocks::volume::VolumeFactory;
-use crate::data_source::Block;
+use crate::block::Block;
 use crate::i3bar::{get_header_json, sources_to_json};
 use log::LevelFilter;
 use simplelog::{Config, WriteLogger};
@@ -17,7 +17,7 @@ extern crate lazy_static;
 extern crate log;
 
 mod blocks;
-mod data_source;
+mod block;
 mod i3bar;
 
 fn main() {
