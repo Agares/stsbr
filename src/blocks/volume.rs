@@ -2,9 +2,8 @@ use crate::block::{Block, BlockError, BlockState, ClickEvent, MouseButton};
 use libpulse_binding::callbacks::ListResult::Item;
 use libpulse_binding::context::Context;
 use libpulse_binding::mainloop::threaded::Mainloop;
-use libpulse_binding::volume::{ChannelVolumes, VolumeDB, VolumeLinear, VOLUME_MUTED};
+use libpulse_binding::volume::ChannelVolumes;
 use std::collections::HashMap;
-use std::io::sink;
 use std::string::ToString;
 use std::sync::Mutex;
 
@@ -79,19 +78,21 @@ impl<'a> Block for Volume<'a> {
         let step = (libpulse_binding::volume::VOLUME_NORM.0
             - libpulse_binding::volume::VOLUME_MUTED.0)
             / 20;
+
         let final_volume = match event.button() {
             MouseButton::ScrollUp => sink_volume.volume.saturating_add(step),
             MouseButton::ScrollDown => sink_volume.volume.saturating_sub(step),
             _ => sink_volume.volume,
         };
 
-        let mut channelvolums = ChannelVolumes {
-            channels: 2,
+        let channel_volumes = ChannelVolumes {
+            channels: sink_volume.channels,
             values: [libpulse_binding::volume::Volume(final_volume); 32],
         };
+
         self.context
             .introspect()
-            .set_sink_volume_by_name(&self.sink_name, &channelvolums, None);
+            .set_sink_volume_by_name(&self.sink_name, &channel_volumes, None);
     }
 }
 

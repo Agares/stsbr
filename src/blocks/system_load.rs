@@ -17,7 +17,7 @@ impl Block for SystemLoad {
         Ok(BlockState::new(format!("{}", load)))
     }
 
-    fn handle_click(&self, event: ClickEvent) {}
+    fn handle_click(&self, _event: ClickEvent) {}
 }
 
 impl SystemLoad {

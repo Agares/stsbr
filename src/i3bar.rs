@@ -18,13 +18,21 @@ struct BarBlock {
 
 #[derive(Deserialize)]
 struct Event {
+    #[allow(unused)]
     instance: String,
+    #[allow(unused)]
     button: u32,
+    #[allow(unused)]
     x: u32,
+    #[allow(unused)]
     y: u32,
+    #[allow(unused)]
     relative_x: u32,
+    #[allow(unused)]
     relative_y: u32,
+    #[allow(unused)]
     width: u32,
+    #[allow(unused)]
     height: u32,
 }
 

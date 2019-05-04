@@ -10,7 +10,7 @@ impl Block for DateTime {
         Ok(BlockState::new(now.format("%Y-%m-%d %T").to_string()))
     }
 
-    fn handle_click(&self, event: ClickEvent) {}
+    fn handle_click(&self, _event: ClickEvent) {}
 }
 
 impl DateTime {
