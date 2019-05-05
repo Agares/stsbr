@@ -69,17 +69,13 @@ fn main() {
     loop {
         println!("{},", sources_to_json(&sources));
 
-        match receiver.try_recv() {
-            Ok(x) => {
-                if x != "[\n" {
-                    let event = read_event(x.trim_matches(','));
-                    let block = sources.get(event.instance()).unwrap();
+        while let Ok(x) = receiver.try_recv() {
+            if x != "[\n" {
+                let event = read_event(x.trim_matches(','));
+                let block = sources.get(event.instance()).unwrap();
 
-                    block.handle_click(event);
-                }
+                block.handle_click(event);
             }
-            Err(TryRecvError::Empty) => {}
-            Err(x) => error!("{}", x),
         }
 
         std::thread::sleep(Duration::from_millis(200));
