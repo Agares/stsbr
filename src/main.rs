@@ -34,8 +34,8 @@ fn main() {
     .unwrap();
 
     let sources = load_blocks();
-
     let receiver = create_stdin_thread();
+
     println!("{}", get_header_json(true));
     println!("[");
 
@@ -57,18 +57,21 @@ fn main() {
 
 fn load_blocks() -> Vec<Box<Block>> {
     let mut config = String::new();
+
     File::open(".stsbr.toml")
         .unwrap()
         .read_to_string(&mut config)
         .unwrap();
+
     let block_factories = create_block_factories();
     let mut sources: Vec<Box<dyn Block>> = vec![];
+
     parse_config(
         &config,
         Box::new(|section| {
             let module_name = section["module"].as_str().unwrap();
 
-            sources.push(block_factories[module_name]());
+            sources.push(block_factories[module_name](section));
         }),
     );
     sources
@@ -86,34 +89,41 @@ fn parse_config<'a>(config: &String, mut on_section: Box<'a + FnMut(&Value)>) {
     }
 }
 
-fn create_block_factories() -> HashMap<String, Box<Fn() -> Box<Block>>> {
+type BlockFactory = Fn(&Value) -> Box<Block>;
+fn create_block_factories() -> HashMap<String, Box<BlockFactory>> {
     let volume_factory = Rc::new(VolumeFactory::new());
 
-    let mut block_factories: HashMap<String, Box<Fn() -> Box<dyn Block>>> = HashMap::new();
+    let mut block_factories: HashMap<String, Box<BlockFactory>> = HashMap::new();
 
-    block_factories.insert("date_time".into(), Box::new(|| Box::new(DateTime::new())));
+    block_factories.insert("date_time".into(), Box::new(|_| Box::new(DateTime::new())));
     block_factories.insert(
         "free_disk_space".into(),
-        Box::new(|| Box::new(FreeDiskSpace::new())),
+        Box::new(|_| Box::new(FreeDiskSpace::new())),
     );
     block_factories.insert(
         "media_player".into(),
-        Box::new(|| Box::new(MediaPlayer::new())),
+        Box::new(|_| Box::new(MediaPlayer::new())),
     );
     block_factories.insert(
         "network_interface".into(),
-        Box::new(|| Box::new(NetworkInterface::new())),
+        Box::new(|_| Box::new(NetworkInterface::new())),
     );
     block_factories.insert(
         "system_load".into(),
-        Box::new(|| Box::new(SystemLoad::new())),
+        Box::new(|_| Box::new(SystemLoad::new())),
     );
     block_factories.insert(
         "volume".into(),
-        Box::new(move || {
-            let volume = volume_factory.clone().new_volume("@DEFAULT_SINK@".into());
+        Box::new(move |section| {
+            if let Value::Table(x) = section {
+                let volume = volume_factory
+                    .clone()
+                    .new_volume(x["sink"].as_str().unwrap().into());
 
-            Box::new(volume)
+                Box::new(volume)
+            } else {
+                panic!("Invalid configuration file");
+            }
         }),
     );
 
@@ -122,6 +132,7 @@ fn create_block_factories() -> HashMap<String, Box<Fn() -> Box<Block>>> {
 
 fn create_stdin_thread() -> Receiver<String> {
     let (sender, receiver): (Sender<String>, Receiver<String>) = std::sync::mpsc::channel();
+
     std::thread::spawn(move || {
         let stdin = std::io::stdin();
 
