@@ -14,7 +14,7 @@ impl Block for SystemLoad {
 
         let load = load_averages[0];
 
-        Ok(BlockState::new(format!("{}", load)))
+        Ok(BlockState::new(format!("{:.2}", load)))
     }
 
     fn handle_click(&self, _event: ClickEvent) {}
