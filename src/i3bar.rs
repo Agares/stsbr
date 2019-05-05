@@ -45,11 +45,11 @@ pub fn get_header_json(allow_click_events: bool) -> String {
     return serde_json::to_string(&header).unwrap();
 }
 
-fn convert_blocks_to_bar_blocks(sources: &Vec<&Block>) -> Vec<BarBlock> {
+fn convert_blocks_to_bar_blocks(sources: &Vec<Box<Block>>) -> Vec<BarBlock> {
     let mut bar_blocks = vec![];
 
     for i in 0..sources.len() {
-        let source = sources[i];
+        let source = &sources[i];
         let state = source.current_state();
 
         match state {
@@ -67,7 +67,7 @@ fn convert_blocks_to_bar_blocks(sources: &Vec<&Block>) -> Vec<BarBlock> {
     bar_blocks
 }
 
-pub fn sources_to_json(sources: &Vec<&Block>) -> String {
+pub fn sources_to_json(sources: &Vec<Box<Block>>) -> String {
     let blocks = convert_blocks_to_bar_blocks(sources);
 
     serde_json::to_string(&blocks).unwrap()

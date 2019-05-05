@@ -1,0 +1,14 @@
+[sources]
+[sources.volume]
+module="volume"
+sink="@DEFAULT_SINK@"
+[sources.media_player]
+module="media_player"
+[sources.free_disk_space]
+module="free_disk_space"
+[sources.network_interface]
+module="network_interface"
+[sources.system_load]
+module="system_load"
+[sources.date_time]
+module="date_time"

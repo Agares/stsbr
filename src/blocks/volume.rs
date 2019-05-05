@@ -4,18 +4,21 @@ use libpulse_binding::context::Context;
 use libpulse_binding::mainloop::threaded::Mainloop;
 use libpulse_binding::volume::ChannelVolumes;
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::string::ToString;
 use std::sync::Mutex;
 
 pub struct VolumeFactory {
-    context: Context,
+    context: Rc<Context>,
     #[allow(unused)]
-    main_loop: Mainloop,
+    main_loop: Rc<Mainloop>,
 }
 
-pub struct Volume<'a> {
+pub struct Volume {
     sink_name: String,
-    context: &'a Context,
+    context: Rc<Context>,
+    #[allow(unused)]
+    main_loop: Rc<Mainloop>,
 }
 
 struct SinkInfo {
@@ -29,7 +32,7 @@ lazy_static! {
     static ref SINK_VOLUME: Mutex<HashMap<String, SinkInfo>> = Mutex::new(HashMap::new());
 }
 
-impl<'a> Block for Volume<'a> {
+impl Block for Volume {
     fn current_state(&self) -> Result<BlockState, BlockError> {
         let sink_name = self.sink_name.clone();
         self.context
@@ -119,15 +122,16 @@ impl VolumeFactory {
         }
 
         VolumeFactory {
-            context: ctx,
-            main_loop: mainloop,
+            context: Rc::new(ctx),
+            main_loop: Rc::new(mainloop),
         }
     }
 
     pub fn new_volume(&self, sink_name: String) -> Volume {
         Volume {
             sink_name,
-            context: &self.context,
+            context: self.context.clone(),
+            main_loop: self.main_loop.clone(),
         }
     }
 }
