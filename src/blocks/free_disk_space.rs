@@ -3,7 +3,7 @@ use crate::block::{Block, BlockError, BlockState, ClickEvent};
 pub struct FreeDiskSpace {}
 
 impl Block for FreeDiskSpace {
-    fn current_state(&self) -> Result<BlockState, BlockError> {
+    fn current_state(&mut self) -> Result<BlockState, BlockError> {
         let stats = nix::sys::statvfs::statvfs("/")
             .map_err(|_| BlockError::new("Failed to stat".to_string()))?;
 

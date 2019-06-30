@@ -33,14 +33,14 @@ fn main() {
     )
     .unwrap();
 
-    let sources = load_blocks();
+    let mut sources = load_blocks();
     let receiver = create_stdin_thread();
 
     println!("{}", get_header_json(true));
     println!("[");
 
     loop {
-        println!("{},", sources_to_json(&sources));
+        println!("{},", sources_to_json(&mut sources));
 
         while let Ok(x) = receiver.try_recv() {
             if x != "[\n" {

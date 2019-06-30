@@ -4,7 +4,7 @@ use nix::sys::socket::{AddressFamily, SockAddr};
 pub struct NetworkInterface {}
 
 impl Block for NetworkInterface {
-    fn current_state(&self) -> Result<BlockState, BlockError> {
+    fn current_state(&mut self) -> Result<BlockState, BlockError> {
         let mut addrs = nix::ifaddrs::getifaddrs()
             .map_err(|_| BlockError::new("Failed to get interface addresses".to_string()))?;
         let iface = addrs.find(|a| {

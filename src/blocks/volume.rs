@@ -33,7 +33,7 @@ lazy_static! {
 }
 
 impl Block for Volume {
-    fn current_state(&self) -> Result<BlockState, BlockError> {
+    fn current_state(&mut self) -> Result<BlockState, BlockError> {
         let sink_name = self.sink_name.clone();
         self.context
             .introspect()

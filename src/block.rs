@@ -20,7 +20,7 @@ impl BlockError {
 }
 
 pub trait Block {
-    fn current_state(&self) -> Result<BlockState, BlockError>;
+    fn current_state(&mut self) -> Result<BlockState, BlockError>;
     fn handle_click(&self, event: ClickEvent);
 }
 

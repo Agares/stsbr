@@ -1,51 +1,140 @@
 use crate::block::{Block, BlockError, BlockState, ClickEvent};
+use mpris::{DBusError, FindingError, Player, PlayerFinder};
+use std::sync::mpsc::{Receiver, Sender};
+use std::thread;
+use std::thread::JoinHandle;
+use std::time::Duration;
+use std::sync::Arc;
 
-pub struct MediaPlayer {}
+enum MediaPlayerRequest {
+    Quit,
+    TogglePause,
+}
+
+enum MediaPlayerStateChange {
+    NowPlaying { artist: String, title: String },
+}
+
+pub struct MediaPlayer {
+    thread: Option<JoinHandle<()>>,
+    command_sender: Sender<MediaPlayerRequest>,
+    state_receiver: Receiver<MediaPlayerStateChange>,
+    current_state: String
+}
 
 impl Block for MediaPlayer {
-    fn current_state(&self) -> Result<BlockState, BlockError> {
-        let player = mpris::PlayerFinder::new()
-            .or_else(|_| Err(BlockError::new("Failed to create player finder".into())))
-            .and_then(|finder| {
-                finder
-                    .find_all()
-                    .map_err(|_| BlockError::new("Failed to find all players".into()))
-            })
-            .and_then(|players| {
-                let player = players
-                    .first()
-                    .ok_or(BlockError::new("No players are running".into()))?;
-                let metadata = player
-                    .get_metadata()
-                    .or_else(|_| Err(BlockError::new("".into())))?;
+    fn current_state(&mut self) -> Result<BlockState, BlockError> {
+        let state = self.state_receiver.try_iter().last();
 
-                let artist = metadata
-                    .artists()
-                    .ok_or(BlockError::new("Failed to get artists".into()))
-                    .and_then(|artists| {
-                        artists
-                            .first()
-                            .ok_or(BlockError::new("Found zero artists".into()))
-                    })
-                    .or_else(|_| Err(BlockError::new("".into())))?;
+        match state {
+            Some(new_state) => match new_state {
+                MediaPlayerStateChange::NowPlaying { artist, title } => {
+                    self.current_state = format!("{} - {}", artist, title);
+                }
+            },
+            None => {}
+        };
 
-                let title = metadata
-                    .title()
-                    .ok_or(BlockError::new("Failed to get title".into()))?;
-
-                let formatted = format!("{} - {}", artist, title);
-
-                Ok(BlockState::new(formatted))
-            });
-
-        return player;
+        if self.current_state != "" {
+            Ok(BlockState::new(self.current_state.clone()))
+        } else {
+            Err(BlockError::new("Unknown state".into()))
+        }
     }
 
-    fn handle_click(&self, _event: ClickEvent) {}
+    fn handle_click(&self, _event: ClickEvent) {
+        self.command_sender.send(MediaPlayerRequest::TogglePause);
+    }
+}
+
+#[derive(Debug)]
+struct PlayerFindingError(String);
+
+impl From<DBusError> for PlayerFindingError {
+    fn from(err: DBusError) -> Self {
+        PlayerFindingError(format!("{:?}", err))
+    }
+}
+
+impl From<FindingError> for PlayerFindingError {
+    fn from(err: FindingError) -> Self {
+        PlayerFindingError(format!("{:?}", err))
+    }
+}
+
+impl From<PlayerFindingError> for BlockError {
+    fn from(err: PlayerFindingError) -> Self {
+        BlockError::new(format!("{:?}", err))
+    }
+}
+
+fn find_player<'a>() -> Result<Player<'a>, PlayerFindingError> {
+    let player = PlayerFinder::new()?.find_active()?;
+
+    Ok(player)
 }
 
 impl MediaPlayer {
     pub fn new() -> Self {
-        MediaPlayer {}
+        let (command_sender, command_receiver): (
+            Sender<MediaPlayerRequest>,
+            Receiver<MediaPlayerRequest>,
+        ) = std::sync::mpsc::channel();
+
+        let (state_sender, state_receiver): (
+            Sender<MediaPlayerStateChange>,
+            Receiver<MediaPlayerStateChange>,
+        ) = std::sync::mpsc::channel();
+
+        MediaPlayer {
+            thread: Some(thread::spawn(move || 'mainloop: loop {
+                let message = command_receiver.recv_timeout(Duration::from_millis(500));
+
+                let should_continue = find_player().map(|player| {
+                    let metadata = player
+                        .get_metadata()
+                        .or_else(|_| Err(BlockError::new("".into())));
+
+                    metadata.map(|metadata| {
+                        let artist = metadata.artists().and_then(|artists| artists.first());
+
+                        let title = metadata.title();
+
+                        match (artist, title) {
+                            (Some(artist), Some(title)) => {
+                                state_sender.send(MediaPlayerStateChange::NowPlaying {
+                                    artist: artist.clone(),
+                                    title: title.into(),
+                                });
+                            }
+                            _ => {}
+                        }
+                    });
+
+                    match message {
+                        Result::Ok(MediaPlayerRequest::Quit) => false,
+                        Result::Ok(MediaPlayerRequest::TogglePause) => {
+                            player.play_pause();
+                            true
+                        }
+                        Result::Err(error) => true,
+                    }
+                }).unwrap_or(true);
+
+                if !should_continue {
+                    break 'mainloop
+                }
+            })),
+            command_sender,
+            state_receiver,
+            current_state: "".into()
+        }
+    }
+}
+
+impl Drop for MediaPlayer {
+    fn drop(&mut self) {
+        self.command_sender.send(MediaPlayerRequest::Quit);
+        self.thread.take().unwrap().join();
     }
 }
