@@ -15,7 +15,9 @@ impl Block for NetworkInterface {
 
         match iface {
             Some(i) => match i.address {
-                Some(SockAddr::Inet(address)) => Ok(BlockState::new(format!("{} {}", Icon::Globe, address.ip()))),
+                Some(SockAddr::Inet(address)) => {
+                    Ok(BlockState::new(format!("{} {}", Icon::Globe, address.ip())))
+                }
                 Some(_) => Err(BlockError::new("Wrong address type".to_string())),
                 None => Err(BlockError::new("No address".to_string())),
             },

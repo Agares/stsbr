@@ -1,4 +1,4 @@
-use crate::block::{Block, BlockError, BlockState, ClickEvent, MouseButton, Icon};
+use crate::block::{Block, BlockError, BlockState, ClickEvent, Icon, MouseButton};
 use libpulse_binding::callbacks::ListResult::Item;
 use libpulse_binding::context::Context;
 use libpulse_binding::mainloop::threaded::Mainloop;
@@ -59,7 +59,11 @@ impl Block for Volume {
         let sink_volume = guard.get(&self.sink_name);
 
         match sink_volume {
-            Some(i) => Ok(BlockState::new(format!("{} {}", Icon::VolumeUp, i.current_volume))),
+            Some(i) => Ok(BlockState::new(format!(
+                "{} {}",
+                Icon::VolumeUp,
+                i.current_volume
+            ))),
             None => Err(BlockError::new("Unknown volume".to_string())),
         }
     }

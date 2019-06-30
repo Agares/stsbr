@@ -1,7 +1,7 @@
+use std::char;
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::char;
 
 #[derive(Debug)]
 pub struct BlockError(String);
@@ -61,7 +61,7 @@ pub enum Icon {
     Play = 0xf04b,
     Pause = 0xf04c,
     HDD = 0xf0a0,
-    Calendar = 0xf133
+    Calendar = 0xf133,
 }
 
 impl Display for Icon {

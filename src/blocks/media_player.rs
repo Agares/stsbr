@@ -18,7 +18,7 @@ pub struct MediaPlayer {
     thread: Option<JoinHandle<()>>,
     command_sender: Sender<MediaPlayerRequest>,
     state_receiver: Receiver<MediaPlayerStateChange>,
-    current_state: String
+    current_state: String,
 }
 
 impl Block for MediaPlayer {
@@ -42,7 +42,9 @@ impl Block for MediaPlayer {
     }
 
     fn handle_click(&self, _event: ClickEvent) {
-        self.command_sender.send(MediaPlayerRequest::TogglePause).unwrap();
+        self.command_sender
+            .send(MediaPlayerRequest::TogglePause)
+            .unwrap();
     }
 }
 
@@ -89,44 +91,50 @@ impl MediaPlayer {
             thread: Some(thread::spawn(move || 'mainloop: loop {
                 let message = command_receiver.recv_timeout(Duration::from_millis(500));
 
-                let should_continue = find_player().map(|player| {
-                    let metadata = player
-                        .get_metadata()
-                        .or_else(|_| Err(BlockError::new("".into())));
+                let should_continue = find_player()
+                    .map(|player| {
+                        let metadata = player
+                            .get_metadata()
+                            .or_else(|_| Err(BlockError::new("".into())));
 
-                    metadata.map(|metadata| {
-                        let artist = metadata.artists().and_then(|artists| artists.first());
+                        metadata
+                            .map(|metadata| {
+                                let artist = metadata.artists().and_then(|artists| artists.first());
 
-                        let title = metadata.title();
+                                let title = metadata.title();
 
-                        match (artist, title) {
-                            (Some(artist), Some(title)) => {
-                                state_sender.send(MediaPlayerStateChange::NowPlaying {
-                                    artist: artist.clone(),
-                                    title: title.into(),
-                                }).unwrap();
+                                match (artist, title) {
+                                    (Some(artist), Some(title)) => {
+                                        state_sender
+                                            .send(MediaPlayerStateChange::NowPlaying {
+                                                artist: artist.clone(),
+                                                title: title.into(),
+                                            })
+                                            .unwrap();
+                                    }
+                                    _ => {}
+                                }
+                            })
+                            .unwrap();
+
+                        match message {
+                            Result::Ok(MediaPlayerRequest::Quit) => false,
+                            Result::Ok(MediaPlayerRequest::TogglePause) => {
+                                player.play_pause().unwrap();
+                                true
                             }
-                            _ => {}
+                            Result::Err(_) => true,
                         }
-                    }).unwrap();
-
-                    match message {
-                        Result::Ok(MediaPlayerRequest::Quit) => false,
-                        Result::Ok(MediaPlayerRequest::TogglePause) => {
-                            player.play_pause().unwrap();
-                            true
-                        }
-                        Result::Err(_) => true,
-                    }
-                }).unwrap_or(true);
+                    })
+                    .unwrap_or(true);
 
                 if !should_continue {
-                    break 'mainloop
+                    break 'mainloop;
                 }
             })),
             command_sender,
             state_receiver,
-            current_state: "".into()
+            current_state: "".into(),
         }
     }
 }

@@ -10,7 +10,11 @@ impl Block for FreeDiskSpace {
         let bytes_free = stats.blocks_available() * stats.block_size();
         let gigabytes_free = bytes_free as f32 / (1024.0f32.powi(3));
 
-        Ok(BlockState::new(format!("{} {:.2} GB", Icon::HDD, gigabytes_free)))
+        Ok(BlockState::new(format!(
+            "{} {:.2} GB",
+            Icon::HDD,
+            gigabytes_free
+        )))
     }
 
     fn handle_click(&self, _event: ClickEvent) {}
