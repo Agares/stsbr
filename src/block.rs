@@ -35,7 +35,7 @@ impl BlockState {
     }
 
     pub fn text(&self) -> &String {
-        return &self.text;
+        &self.text
     }
 }
 
@@ -66,7 +66,7 @@ pub enum Icon {
 
 impl Display for Icon {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", char::from_u32(self.clone() as u32).unwrap())
+        write!(f, "{}", char::from_u32(*self as u32).unwrap())
     }
 }
 

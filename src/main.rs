@@ -77,7 +77,7 @@ fn load_blocks() -> Vec<Box<Block>> {
     sources
 }
 
-fn parse_config<'a>(config: &String, mut on_section: Box<'a + FnMut(&Value)>) {
+fn parse_config<'a>(config: &str, mut on_section: Box<'a + FnMut(&Value)>) {
     let parsed_config = config.parse::<Value>().unwrap();
 
     if let Value::Table(i) = parsed_config {
@@ -106,7 +106,11 @@ fn create_block_factories() -> HashMap<String, Box<BlockFactory>> {
     );
     block_factories.insert(
         "network_interface".into(),
-        Box::new(|_| Box::new(NetworkInterface::new())),
+        Box::new(|section| {
+            Box::new(NetworkInterface::new(
+                section["interface"].as_str().unwrap().into(),
+            ))
+        }),
     );
     block_factories.insert(
         "system_load".into(),

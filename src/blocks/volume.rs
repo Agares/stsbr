@@ -37,8 +37,8 @@ impl Block for Volume {
         let sink_name = self.sink_name.clone();
         self.context
             .introspect()
-            .get_sink_info_by_name(&self.sink_name, move |info| match info {
-                Item(sink_info) => {
+            .get_sink_info_by_name(&self.sink_name, move |info| {
+                if let Item(sink_info) = info {
                     let mut volume_map = SINK_VOLUME.lock().unwrap();
                     let linear = (*sink_info).volume.avg();
 
@@ -52,7 +52,6 @@ impl Block for Volume {
                         },
                     );
                 }
-                _ => {}
             });
 
         let guard = SINK_VOLUME.lock().unwrap();

@@ -25,13 +25,12 @@ impl Block for MediaPlayer {
     fn current_state(&mut self) -> Result<BlockState, BlockError> {
         let state = self.state_receiver.try_iter().last();
 
-        match state {
-            Some(new_state) => match new_state {
+        if let Some(new_state) = state {
+            match new_state {
                 MediaPlayerStateChange::NowPlaying { artist, title } => {
                     self.current_state = format!("{} {} - {}", Icon::Music, artist, title);
                 }
-            },
-            None => {}
+            }
         };
 
         if self.current_state != "" {
@@ -103,16 +102,13 @@ impl MediaPlayer {
 
                                 let title = metadata.title();
 
-                                match (artist, title) {
-                                    (Some(artist), Some(title)) => {
-                                        state_sender
-                                            .send(MediaPlayerStateChange::NowPlaying {
-                                                artist: artist.clone(),
-                                                title: title.into(),
-                                            })
-                                            .unwrap();
-                                    }
-                                    _ => {}
+                                if let (Some(artist), Some(title)) = (artist, title) {
+                                    state_sender
+                                        .send(MediaPlayerStateChange::NowPlaying {
+                                            artist: artist.clone(),
+                                            title: title.into(),
+                                        })
+                                        .unwrap();
                                 }
                             })
                             .unwrap();

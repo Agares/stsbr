@@ -8,6 +8,7 @@ module="media_player"
 module="free_disk_space"
 [sources.network_interface]
 module="network_interface"
+interface="eno1"
 [sources.system_load]
 module="system_load"
 [sources.date_time]

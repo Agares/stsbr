@@ -1,17 +1,21 @@
 use crate::block::{Block, BlockError, BlockState, ClickEvent, Icon};
-use nix::sys::socket::{AddressFamily, SockAddr};
+use nix::sys::socket::SockAddr;
 
-pub struct NetworkInterface {}
+pub struct NetworkInterface {
+    interface: String,
+}
+
+impl From<nix::Error> for BlockError {
+    fn from(e: nix::Error) -> Self {
+        BlockError::new(format!("Failed to find network interface: {:?}", e))
+    }
+}
 
 impl Block for NetworkInterface {
     fn current_state(&mut self) -> Result<BlockState, BlockError> {
-        let mut addrs = nix::ifaddrs::getifaddrs()
-            .map_err(|_| BlockError::new("Failed to get interface addresses".to_string()))?;
-        let iface = addrs.find(|a| {
-            a.interface_name == "eno1"
-                && a.address
-                    .map_or(false, |a| a.family() == AddressFamily::Inet)
-        });
+        let mut addrs = nix::ifaddrs::getifaddrs()?;
+
+        let iface = addrs.find(|a| a.interface_name == self.interface);
 
         match iface {
             Some(i) => match i.address {
@@ -21,7 +25,9 @@ impl Block for NetworkInterface {
                 Some(_) => Err(BlockError::new("Wrong address type".to_string())),
                 None => Err(BlockError::new("No address".to_string())),
             },
-            None => Err(BlockError::new("Failed to find interface".to_string())),
+            None => Err(BlockError::new(
+                "Failed to find network interface".to_string(),
+            )),
         }
     }
 
@@ -29,7 +35,7 @@ impl Block for NetworkInterface {
 }
 
 impl NetworkInterface {
-    pub fn new() -> Self {
-        NetworkInterface {}
+    pub fn new(interface: String) -> Self {
+        NetworkInterface { interface }
     }
 }

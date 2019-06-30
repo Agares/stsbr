@@ -42,7 +42,7 @@ pub fn get_header_json(allow_click_events: bool) -> String {
         click_events: allow_click_events,
     };
 
-    return serde_json::to_string(&header).unwrap();
+    serde_json::to_string(&header).unwrap()
 }
 
 fn convert_blocks_to_bar_blocks(sources: &mut Vec<Box<Block>>) -> Vec<BarBlock> {
