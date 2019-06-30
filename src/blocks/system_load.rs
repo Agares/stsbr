@@ -1,4 +1,4 @@
-use crate::block::{Block, BlockError, BlockState, ClickEvent};
+use crate::block::{Block, BlockError, BlockState, ClickEvent, Icon};
 use std::os::raw::c_double;
 
 pub struct SystemLoad {}
@@ -14,7 +14,7 @@ impl Block for SystemLoad {
 
         let load = load_averages[0];
 
-        Ok(BlockState::new(format!("{:.2}", load)))
+        Ok(BlockState::new(format!("{} {:.2}", Icon::LightningBolt, load)))
     }
 
     fn handle_click(&self, _event: ClickEvent) {}

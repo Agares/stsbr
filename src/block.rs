@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::char;
 
 #[derive(Debug)]
 pub struct BlockError(String);
@@ -45,6 +46,28 @@ pub enum MouseButton {
     Right,
     ScrollUp,
     ScrollDown,
+}
+
+#[derive(Debug, Copy, Clone)]
+#[allow(dead_code)]
+pub enum Icon {
+    LightningBolt = 0xf0e7,
+    VolumeUp = 0xf028,
+    VolumeDown = 0xf027,
+    VolumeOff = 0xf026,
+    VolumeMute = 0xf6a9,
+    Globe = 0xf0ac,
+    Music = 0xf001,
+    Play = 0xf04b,
+    Pause = 0xf04c,
+    HDD = 0xf0a0,
+    Calendar = 0xf133
+}
+
+impl Display for Icon {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", char::from_u32(self.clone() as u32).unwrap())
+    }
 }
 
 #[derive(Debug)]

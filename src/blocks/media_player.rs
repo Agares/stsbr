@@ -1,10 +1,9 @@
-use crate::block::{Block, BlockError, BlockState, ClickEvent};
+use crate::block::{Block, BlockError, BlockState, ClickEvent, Icon};
 use mpris::{DBusError, FindingError, Player, PlayerFinder};
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
-use std::sync::Arc;
 
 enum MediaPlayerRequest {
     Quit,
@@ -29,7 +28,7 @@ impl Block for MediaPlayer {
         match state {
             Some(new_state) => match new_state {
                 MediaPlayerStateChange::NowPlaying { artist, title } => {
-                    self.current_state = format!("{} - {}", artist, title);
+                    self.current_state = format!("{} {} - {}", Icon::Music, artist, title);
                 }
             },
             None => {}
@@ -43,7 +42,7 @@ impl Block for MediaPlayer {
     }
 
     fn handle_click(&self, _event: ClickEvent) {
-        self.command_sender.send(MediaPlayerRequest::TogglePause);
+        self.command_sender.send(MediaPlayerRequest::TogglePause).unwrap();
     }
 }
 
@@ -105,19 +104,19 @@ impl MediaPlayer {
                                 state_sender.send(MediaPlayerStateChange::NowPlaying {
                                     artist: artist.clone(),
                                     title: title.into(),
-                                });
+                                }).unwrap();
                             }
                             _ => {}
                         }
-                    });
+                    }).unwrap();
 
                     match message {
                         Result::Ok(MediaPlayerRequest::Quit) => false,
                         Result::Ok(MediaPlayerRequest::TogglePause) => {
-                            player.play_pause();
+                            player.play_pause().unwrap();
                             true
                         }
-                        Result::Err(error) => true,
+                        Result::Err(_) => true,
                     }
                 }).unwrap_or(true);
 
@@ -134,7 +133,7 @@ impl MediaPlayer {
 
 impl Drop for MediaPlayer {
     fn drop(&mut self) {
-        self.command_sender.send(MediaPlayerRequest::Quit);
-        self.thread.take().unwrap().join();
+        self.command_sender.send(MediaPlayerRequest::Quit).unwrap();
+        self.thread.take().unwrap().join().unwrap();
     }
 }
